@@ -1,22 +1,132 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>数据查询</title>
+    <title>美天旎查询系统</title>
     <style>
+        /* 全局样式 */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        /* 标题样式 */
+        .title {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin: 0 0 2rem 0;
+            text-align: center;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: #409eff;
+            border-radius: 2px;
+        }
+
+        /* 输入框组 */
+        .input-group {
+            width: 80%;
+            max-width: 800px;
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        #inputKey {
+            flex: 1;
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        #inputKey:focus {
+            outline: none;
+            border-color: #409eff;
+            box-shadow: 0 2px 12px rgba(64, 158, 255, 0.25);
+        }
+
+        /* 按钮样式 */
+        button {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-btn {
+            background: #409eff;
+            color: white;
+        }
+
+        .clear-btn {
+            background: #ff4d4f;
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 结果区域 */
         #result {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            min-height: 30px;
-            color: #ff4444;
-            font-weight: bold;
+            width: 80%;
+            max-width: 800px;
+            padding: 25px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        /* 状态样式 */
+        .success {
+            color: #67c23a;
+            border: 2px solid #e1f3d8;
+            background: #f0f9eb;
+        }
+
+        .error {
+            color: #f56c6c;
+            border: 2px solid #fde2e2;
+            background: #fef0f0;
         }
     </style>
 </head>
 <body>
-    <input type="text" id="inputKey" placeholder="输入完整二维码编号"> <!-- 改为text类型 -->
-    <button onclick="searchData()">查询</button>
-    <div id="result">等待查询...</div>
+    <h1 class="title">美天旎查询系统</h1>
+    
+    <div class="input-group">
+        <input type="text" id="inputKey" placeholder="请输入完整的二维码编号">
+        <button class="search-btn" onclick="searchData()">查询</button>
+        <button class="clear-btn" onclick="clearInput()">清除</button>
+    </div>
+    <div id="result">系统准备就绪，等待查询指令...</div>
 
     <script>
         let jsonData = [];
@@ -28,42 +138,52 @@
                 return response.json();
             })
             .then(data => {
-                console.log('数据加载成功:', data);
                 jsonData = data;
-                document.getElementById('result').textContent = '数据已就绪';
+                showResult('系统已就绪，可开始查询', 'success');
             })
             .catch(error => {
                 console.error('加载失败:', error);
-                document.getElementById('result').textContent = '数据加载失败，请检查控制台';
+                showResult('数据加载失败，请联系管理员', 'error');
             });
 
-        // 修正后的搜索函数
+        // 查询功能
         function searchData() {
-            const inputElement = document.getElementById('inputKey'); // 匹配正确的ID
-            const resultDiv = document.getElementById('result'); // 单独定义结果元素
+            const inputKey = document.getElementById('inputKey').value.trim();
             
-            // 清空旧结果
-            resultDiv.innerHTML = '';
-            port : 5500
-            // 获取输入值
-            const inputKey = inputElement.value.trim();
-
-            // 输入验证
             if (!inputKey) {
-                resultDiv.textContent = "⚠️ 请输入查询编号";
+                showResult('⚠️ 请输入有效的二维码编号', 'error');
                 return;
             }
 
-            // 数据匹配
             const matchedItem = jsonData.find(item => 
-                item.二维码 === inputKey // 精确匹配二维码字段
+                item.二维码 === inputKey
             );
 
-            // 显示结果
             if (matchedItem) {
-                resultDiv.innerHTML = `✅ 查询结果：<span style="color:green">${matchedItem.代理商}</span>`;
+                showResult(`查询成功！<br><strong>代理商：</strong>${matchedItem.代理商}`, 'success');
             } else {
-                resultDiv.textContent = `❌ 未找到编号 ${inputKey} 对应的数据`;
+                showResult(`❌ 未找到编号 ${inputKey} 的匹配数据`, 'error');
+            }
+        }
+
+        // 清除功能
+        function clearInput() {
+            document.getElementById('inputKey').value = '';
+            showResult('输入已清除，等待新指令...');
+            document.getElementById('inputKey').focus();
+        }
+
+        // 结果展示
+        function showResult(message, type = 'normal') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = message;
+            resultDiv.className = type;
+            
+            // 自动淡出提示
+            if (type !== 'normal') {
+                setTimeout(() => {
+                    resultDiv.style.opacity = '0.9';
+                }, 3000);
             }
         }
     </script>
