@@ -3,35 +3,32 @@
 <head>
     <title>数据查询</title>
     <style>
-        /* 添加显眼的样式 */
         #result {
             margin-top: 20px;
             padding: 10px;
             border: 1px solid #ccc;
             min-height: 30px;
-            color: #ff4444; /* 红色文字确保可见 */
+            color: #ff4444;
             font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <input type="number" id="inputKey" placeholder="输入数字编号">
+    <input type="text" id="inputKey" placeholder="输入完整二维码编号"> <!-- 改为text类型 -->
     <button onclick="searchData()">查询</button>
-    <div id="result">等待查询...</div> <!-- 添加默认文本 -->
+    <div id="result">等待查询...</div>
 
     <script>
         let jsonData = [];
 
-        // 添加错误处理的加载逻辑
+        // 数据加载
         fetch('data.json')
             .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP错误! 状态码: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP错误! 状态码: ${response.status}`);
                 return response.json();
             })
             .then(data => {
-                console.log('成功加载数据:', data);
+                console.log('数据加载成功:', data);
                 jsonData = data;
                 document.getElementById('result').textContent = '数据已就绪';
             })
@@ -40,27 +37,31 @@
                 document.getElementById('result').textContent = '数据加载失败，请检查控制台';
             });
 
-        // 增强版搜索函数
+        // 修正后的搜索函数
         function searchData() {
-            const inputKey = document.getElementById('input').value.trim();
-            const resultDiv = jsonData.find(item => item.二维码 === input);
-            document.getElementById('result').innerText = result?.代理商 || "未找到";
+            const inputElement = document.getElementById('inputKey'); // 匹配正确的ID
+            const resultDiv = document.getElementById('result'); // 单独定义结果元素
             
-            // 清除旧结果
+            // 清空旧结果
             resultDiv.innerHTML = '';
+            port : 5500
+            // 获取输入值
+            const inputKey = inputElement.value.trim();
 
+            // 输入验证
             if (!inputKey) {
                 resultDiv.textContent = "⚠️ 请输入查询编号";
                 return;
             }
 
-            // 重要修复：处理数字与字符串的匹配问题
+            // 数据匹配
             const matchedItem = jsonData.find(item => 
-                item.key.toString() === inputKey.toString() // 双重类型转换确保匹配
+                item.二维码 === inputKey // 精确匹配二维码字段
             );
 
+            // 显示结果
             if (matchedItem) {
-                resultDiv.innerHTML = `✅ 查询结果：<span style="color:green">${matchedItem.value}</span>`;
+                resultDiv.innerHTML = `✅ 查询结果：<span style="color:green">${matchedItem.代理商}</span>`;
             } else {
                 resultDiv.textContent = `❌ 未找到编号 ${inputKey} 对应的数据`;
             }
