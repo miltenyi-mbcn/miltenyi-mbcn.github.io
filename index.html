@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>数据查询</title>
+    <style>
+        /* 添加显眼的样式 */
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            min-height: 30px;
+            color: #ff4444; /* 红色文字确保可见 */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <input type="number" id="inputKey" placeholder="输入数字编号">
+    <button onclick="searchData()">查询</button>
+    <div id="result">等待查询...</div> <!-- 添加默认文本 -->
+
+    <script>
+        let jsonData = [];
+
+        // 添加错误处理的加载逻辑
+        fetch('data.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP错误! 状态码: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('成功加载数据:', data);
+                jsonData = data;
+                document.getElementById('result').textContent = '数据已就绪';
+            })
+            .catch(error => {
+                console.error('加载失败:', error);
+                document.getElementById('result').textContent = '数据加载失败，请检查控制台';
+            });
+
+        // 增强版搜索函数
+        function searchData() {
+            const inputKey = document.getElementById('input').value.trim();
+            const resultDiv = jsonData.find(item => item.二维码 === input);
+            document.getElementById('result').innerText = result?.代理商 || "未找到";
+            
+            // 清除旧结果
+            resultDiv.innerHTML = '';
+
+            if (!inputKey) {
+                resultDiv.textContent = "⚠️ 请输入查询编号";
+                return;
+            }
+
+            // 重要修复：处理数字与字符串的匹配问题
+            const matchedItem = jsonData.find(item => 
+                item.key.toString() === inputKey.toString() // 双重类型转换确保匹配
+            );
+
+            if (matchedItem) {
+                resultDiv.innerHTML = `✅ 查询结果：<span style="color:green">${matchedItem.value}</span>`;
+            } else {
+                resultDiv.textContent = `❌ 未找到编号 ${inputKey} 对应的数据`;
+            }
+        }
+    </script>
+</body>
+</html>
